@@ -87,7 +87,25 @@ namespace CMDM.DAL.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ParentCustomerId");
+
                     b.ToTable("CustomerReferences");
+                });
+
+            modelBuilder.Entity("CMDM.Core.Models.CustomerReference", b =>
+                {
+                    b.HasOne("CMDM.Core.Models.CustomerMaster", "CustomerMaster")
+                        .WithMany("CustomerReferences")
+                        .HasForeignKey("ParentCustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CustomerMaster");
+                });
+
+            modelBuilder.Entity("CMDM.Core.Models.CustomerMaster", b =>
+                {
+                    b.Navigation("CustomerReferences");
                 });
 #pragma warning restore 612, 618
         }

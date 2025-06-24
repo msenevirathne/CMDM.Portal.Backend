@@ -15,6 +15,16 @@ namespace CMDM.DAL.Repositories
             DbSet = _context.Set<TEntity>();
         }
 
+        public async Task<TEntity> GetByIdAsync(int id)
+        {
+            var entity = await DbSet.FindAsync(id);
+            if (entity == null)
+            {
+                throw new InvalidOperationException($"Entity of type {typeof(TEntity).Name} with ID {id} was not found.");
+            }
+            return entity;
+        }
+
         public async Task<List<TEntity>> GetAllAsync()
         {
             return await DbSet.ToListAsync();

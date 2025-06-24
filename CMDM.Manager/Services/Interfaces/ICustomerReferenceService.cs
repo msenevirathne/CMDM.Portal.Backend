@@ -5,8 +5,9 @@ namespace CMDM.Manager.Services.Interfaces
 {
     public interface ICustomerReferenceService
     {
+        Task<CustomerMaster> GetByIdAsync(int id);
         Task<List<CustomerReference>> GetAllAsync();
-        Task<CustomerReference> CreateAsync(CreateCustomerReferenceDto customerRefDto);
-        Task<CustomerReference> UpdateAsync(CreateCustomerReferenceDto customerRefDto);
+        Task<CustomerReference> CreateAsync(Customer customer, int customerMasterId);
+        Task<CustomerReference> UpdateAsync(int id, CreateCustomerReferenceDto customerRefDto);
     }
 }

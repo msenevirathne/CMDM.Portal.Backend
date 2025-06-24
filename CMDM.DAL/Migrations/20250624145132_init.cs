@@ -5,7 +5,7 @@
 namespace CMDM.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class initiate : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -45,17 +45,28 @@ namespace CMDM.DAL.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CustomerReferences", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CustomerReferences_CustomerMasters_ParentCustomerId",
+                        column: x => x.ParentCustomerId,
+                        principalTable: "CustomerMasters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomerReferences_ParentCustomerId",
+                table: "CustomerReferences",
+                column: "ParentCustomerId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "CustomerMasters");
+                name: "CustomerReferences");
 
             migrationBuilder.DropTable(
-                name: "CustomerReferences");
+                name: "CustomerMasters");
         }
     }
 }

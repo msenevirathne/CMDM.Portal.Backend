@@ -1,5 +1,6 @@
 ﻿using CMDM.Core.Models;
 using CMDM.Manager;
+using CMDM.Manager.DTOs;
 using CMDM.Manager.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -35,6 +36,22 @@ namespace CMDM.WebAPI.Controllers
             }
         }
 
+        [HttpGet("checktables")]
+        public async Task<IActionResult> CheckTablesExist()
+        {
+            try
+            {
+                var customerMasters = await _customerMasterService.GetAllAsync();
+                var customerReferences = await _customerReferenceService.GetAllAsync();
+                bool anyExist = customerMasters.Any() || customerReferences.Any();
+                return Ok(new { anyExist = anyExist });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while checking customer tables.");
+            }
+        }
+
         [HttpPost("merge")]
         public async Task<IActionResult> MergeCustomers()
         {
@@ -50,10 +67,8 @@ namespace CMDM.WebAPI.Controllers
                     {
                         continue; // Skip empty groups
                     }
-                    // Map Customer to CreateCustomerMasterDto
-                    var dtoModel = CustomerMapper.ToCreateDto(customer);
                     // Add data to the CustomerMasters table
-                    var customerMaster = await _customerMasterService.CreateAsync(dtoModel);
+                    var customerMaster = await _customerMasterService.CreateAsync(customer);
 
                     if (customerMaster != null)
                     {
@@ -61,15 +76,12 @@ namespace CMDM.WebAPI.Controllers
                         {
                             var rest = group.Skip(1).ToList();
                             // Add data to the CustomerReferences table
-                            foreach (var item in rest)
+                            foreach (var customerRef in rest)
                             {
-                                // Map Customer to CreateCustomerReferenceDto
-                                var customerRefDtoModel = CustomerMapper.ToCreateDto(item, customerMaster.Id);
                                 // Add data to the CustomerReference table
-                                await _customerReferenceService.CreateAsync(customerRefDtoModel);
+                                await _customerReferenceService.CreateAsync(customerRef, customerMaster.Id);
                             }
-                        }
-                        
+                        }                      
                     }
                 }
                 return Ok();
@@ -108,16 +120,46 @@ namespace CMDM.WebAPI.Controllers
             }
         }
 
-        [HttpPut("{custNo}")]
-        public async Task<IActionResult> UpdateCustomer(int custNo, [FromBody] Customer customer)
+        [HttpPut("updatemaster/{custNo}")]
+        public async Task<IActionResult> UpdateCustomerMaster(int custNo, [FromBody] CreateCustomerMasterDto customerDto)
         {
             try
             {
-                return Ok();
+                var result = await _customerMasterService.UpdateAsync(custNo, customerDto);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Customer master updated successfully.",
+                    data = result
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while updating the customer.");
+                return StatusCode(500, "An error occurred while updating the customer master.");
+            }
+        }
+
+        [HttpPut("updatereference/{custNo}")]
+        public async Task<IActionResult> UpdateCustomerReference(int custNo, [FromBody] CreateCustomerReferenceDto customerDto)
+        {
+            try
+            {
+                var customerMaster = await _customerMasterService.GetByIdAsync(customerDto.ParentCustomerId);
+                if (customerMaster == null)
+                {
+                    return BadRequest("Invalid ParentCustomerId: No such CustomerMaster exists.");
+                }
+                var result = await _customerReferenceService.UpdateAsync(custNo, customerDto);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Customer reference updated successfully.",
+                    data = CustomerMapper.ToCustomerReferenceDto(result)
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while updating the customer reference.");
             }
         }
     }

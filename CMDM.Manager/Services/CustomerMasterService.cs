@@ -14,21 +14,28 @@ namespace CMDM.Manager.Services
             _customerMasterRepository = customerMasterRepository;
         }
 
+        public async Task<CustomerMaster> GetByIdAsync(int id)
+        {
+            return await _customerMasterRepository.GetByIdAsync(id);
+        }
+
         public async Task<List<CustomerMaster>> GetAllAsync()
         {
             return await _customerMasterRepository.GetAllAsync();
         }
 
-        public async Task<CustomerMaster> CreateAsync(CreateCustomerMasterDto customerMasterDto)
+        public async Task<CustomerMaster> CreateAsync(Customer customer)
         {
-            var entity = CustomerMapper.ToEntity(customerMasterDto);
+            var entity = CustomerMapper.ToCustomerMaster(customer);
             var customerMaster = await _customerMasterRepository.AddAsync(entity);
             return customerMaster;
         }
 
-        public Task<CustomerMaster> UpdateAsync(CreateCustomerMasterDto customerMasterDto)
+        public Task<CustomerMaster> UpdateAsync(int id, CreateCustomerMasterDto customerMasterDto)
         {
-            throw new NotImplementedException();
+            var entity = CustomerMapper.ToCustomerMaster(id, customerMasterDto);
+            var customerMaster = _customerMasterRepository.UpdateAsync(entity);
+            return customerMaster;
         }
     }
 }

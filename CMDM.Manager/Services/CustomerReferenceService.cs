@@ -14,21 +14,49 @@ namespace CMDM.Manager.Services
             _customerReferenceRepository = customerReferenceRepository;
         }
 
-        public async Task<List<CustomerReference>> GetAllAsync()
-        {
-            return await _customerReferenceRepository.GetAllAsync();
-        }
-
-        public async Task<CustomerReference> CreateAsync(CreateCustomerReferenceDto customerReferenceDto)
-        {
-            var entity = CustomerMapper.ToEntity(customerReferenceDto);
-            var customerRef = await _customerReferenceRepository.AddAsync(entity);
-            return customerRef;
-        }
-
-        public Task<CustomerReference> UpdateAsync(CreateCustomerReferenceDto customerMasterDto)
+        public Task<CustomerMaster> GetByIdAsync(int id)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<List<CustomerReference>> GetAllAsync()
+        {
+            try
+            {
+                return await _customerReferenceRepository.GetAllAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while retrieving the customer references.", ex);
+            }
+        }
+
+        public async Task<CustomerReference> CreateAsync(Customer customer, int customerMasterId)
+        {
+            try
+            {
+                var entity = CustomerMapper.ToCustomerReference(customer, customerMasterId);
+                var customerRef = await _customerReferenceRepository.AddAsync(entity);
+                return customerRef;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while creating the customer reference.", ex);
+            }
+        }
+
+        public Task<CustomerReference> UpdateAsync(int id, CreateCustomerReferenceDto customerReferenceDto)
+        {
+            try
+            {
+                var entity = CustomerMapper.ToCustomerReference(id, customerReferenceDto);
+                var customerRef = _customerReferenceRepository.UpdateAsync(entity);
+                return customerRef;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while updating the customer reference.", ex);
+            }
         }
     }
 }

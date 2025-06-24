@@ -10,5 +10,6 @@ namespace CMDM.Core.Models
         public string? Add02 { get; set; }
         public string? PostCode { get; set; }
         public string? Country { get; set; }
+        public List<CustomerReference> CustomerReferences { get; set; } = new List<CustomerReference>();
     }
 }
